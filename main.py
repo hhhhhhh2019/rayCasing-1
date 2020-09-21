@@ -1,15 +1,17 @@
 import pygame
 from settings import *
-from rayCasting import Wall, Ray, Point
+from rayCasting import Wall, Point
+from math import radians
 from Vector import *
+from random import randint
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
-walls = [
-    Wall(Vec(0, 10), Vec(300, 10))
-]
+walls = []
+
+[walls.append(Wall(Vec(randint(0, WIDTH), randint(0, HEIGHT)), Vec(randint(0, WIDTH), randint(0, HEIGHT)))) for i in range(5)]
 
 run = True
 
@@ -26,9 +28,31 @@ while run:
 
     [w.show(screen) for w in walls]
 
-    p.show(screen, walls)
+    keys = pygame.key.get_pressed()
 
-    p.p.x, p.p.y = pygame.mouse.get_pos()
+    if keys[pygame.K_LEFT]:
+        p.rotate(1)
+
+    if keys[pygame.K_RIGHT]:
+        p.rotate(-1)
+
+    d = Vec(0, 0)
+
+    if keys[pygame.K_w]:
+        d = from_angle(radians(p.a))
+
+    if keys[pygame.K_s]:
+        d = from_angle(radians(p.a + 180))
+
+    if keys[pygame.K_a]:
+        d = from_angle(radians(p.a + 90))
+
+    if keys[pygame.K_d]:
+        d = from_angle(radians(p.a - 90))
+
+    p.render(screen, walls)
+
+    p.p += d
 
     pygame.display.flip()
 

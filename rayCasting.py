@@ -4,6 +4,10 @@ from math import sin, cos, pi, radians, degrees
 import pygame
 
 
+def map(n, start1, stop1, start2, stop2):
+    return ((n-start1)/(stop1-start1))*(stop2-start2)+start2
+
+
 class Wall:
     def __init__(self, a: Vec, b: Vec) -> None:
         self.a = a
@@ -57,18 +61,53 @@ class Point:
     def update_rays(self):
         self.rays = []
 
-        [self.rays.append(Ray(i + self.a + 180)) for i in range(int(-self.fov / 2), int(self.fov / 2), int(self.fov / self.r))]
+        [self.rays.append(Ray(i + self.a)) for i in range(int(self.fov / 2), int(-self.fov / 2), int(-self.fov / self.r))]
 
     def rotate(self, a):
         self.a += a
-        [r.rotate(a) for r in self.rays]
+        self.update_rays()
 
     def show(self, sc, walls):
+        scene = []
+
         for r in self.rays:
+            record = 1000000
+            closest = None
+
             for w in walls:
                 pt = r.cast(self.p, w)
 
                 if pt:
-                    pygame.draw.line(sc, RED, self.p.get, pt.get)
+                    d = distance(self.p, pt)
+
+                    if d < record:
+                        record = d
+
+                        closest = pt
+
+            if closest:
+                pygame.draw.line(sc, RED, self.p.get, closest.get)
 
             r.show(sc, self.p)
+
+            scene.append(record)
+
+        return scene
+
+    def render(self, sc, walls):
+        scene = self.show(sc, walls)
+
+        w = WIDTH / len(scene)
+
+        for i in scene:
+            h = map(i, 0, WIDTH, HEIGHT, 20)
+
+            if h < 0:
+                h = 0
+
+            if h > 100:
+                h = 100
+
+            print(h)
+
+            pygame.draw.rect(sc, WHITE, pygame.Rect(scene.index(i) * w, HALF_HEIGHT - h, w, h))
